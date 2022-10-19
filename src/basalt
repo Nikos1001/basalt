@@ -1,0 +1,50 @@
+#! python3
+
+from error import Error
+import sys
+
+import reader
+import parser
+import compiler
+import os
+import shutil
+import native_funcs
+
+if len(sys.argv) == 1:
+    print('Usage: prion [path/to/file.pri]')
+    exit(-1)
+
+def handle_errs(errs):
+    if len(errs) > 0:
+        for err in errs:
+            err.print()
+        shutil.rmtree('build') 
+        exit(-1)
+
+if not os.path.isdir('build'):
+    os.mkdir('build')
+
+read_errs, lists = reader.read_file(sys.argv[1])
+handle_errs(read_errs)
+
+parse_errs = []
+asts = []
+for l in lists:
+    ast = parser.parse(l, parse_errs)
+    asts.append(ast)
+handle_errs(parse_errs)
+
+compile_errs = []
+
+global_compiler = compiler.Compiler()
+global_compiler.funcs[-1]['print'] = compiler.Function('name')
+global_compiler.funcs[-1]['print'].native_specs.append(native_funcs.print_spec)
+global_compiler.find_decls(asts, compile_errs)
+main = global_compiler.get_incarn('main', [], compile_errs)
+
+if main == None:
+    compile_errs.append(Error().msg('Main function missing.'))
+
+handle_errs(compile_errs)
+
+compiler.close_all_blocks()
