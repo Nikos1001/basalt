@@ -48,3 +48,9 @@ if main == None:
 handle_errs(compile_errs)
 
 compiler.close_all_blocks()
+
+path_pieces = sys.argv[0].split('/')
+path_pieces[-1] = 'rtlib.cio'
+rtlib_path = '/'.join(path_pieces)
+
+shutil.copy(rtlib_path, 'build/a.cio')
