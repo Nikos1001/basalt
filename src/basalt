@@ -11,7 +11,7 @@ import shutil
 import native_funcs
 
 if len(sys.argv) == 1:
-    print('Usage: prion [path/to/file.pri]')
+    print('Usage: basalt [path/to/file]')
     exit(-1)
 
 def handle_errs(errs):
