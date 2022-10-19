@@ -1,2 +1,4 @@
 
-examples/
+src/__pycache__/
+*.pyc
+test/
