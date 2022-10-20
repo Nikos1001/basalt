@@ -22,6 +22,9 @@ class Block:
             self.name += 'abcdefghijklmnopqrstuvwxyz'[x % 26]
             x //= 26
         self.src =  'copy=cvv 2\n' + \
+                    'copy= 2\n' + \
+                    'copy=*[+]c 3\n' + \
+                    'copy*[+v]=v 3\n' + \
                     'sconst 13\n' + \
                     'spop 2\n' + \
                     'speek 2\n' + \
@@ -60,14 +63,28 @@ class Block:
     def mov_var_to_data(self):
         self.src += '\tsmov 6 7 4 5\n'
 
-    def call(self, block):
+    def call(self, block, ret_size):
         self.src = block.name + ' 4\n' + self.src
         self.src += '\tcopy=*[+]c 0 4 0\n'
         self.src += '\tcopy=*[+]c 1 6 0\n'
         self.src += '\t' + block.name + ' 4 5 6 7\n'
         self.src += '\tcopy= 2 0\n'
+
+        for i in range(ret_size):
+            self.const(ret_size - i)
+            self.peek()
+            self.mov_data_to_var()
+        for i in range(ret_size):
+            self.pop();
         self.src += '\tcopy*[+v]=v 4 2 0\n'
-        self.src += '\tcopy*[+v]=v 6 2 0\n'
+
+        for i in range(ret_size):
+            self.const(ret_size - i, True)
+            self.peek(True)
+            self.mov_var_to_data()
+        for i in range(ret_size):
+            self.pop(True);
+        self.src += '\tcopy*[+v]=v 6 2 1\n'
     
     def printn(self):
         self.src += '\tsprintn 4 5\n'
@@ -441,7 +458,7 @@ class Compiler:
                 if type(callee) == FnNativeSpec:
                     callee.compile(block, [self.typecheck(arg, errs) for arg in ast.args])
                 else:
-                    block.call(callee.block)
+                    block.call(callee.block, callee.ret_type.size())
         elif type(ast) == parser.Var:
             if not ast.id in self.var_decls:
                 return

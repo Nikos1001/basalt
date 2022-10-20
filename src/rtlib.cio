@@ -14,6 +14,7 @@ copy*[+]=c 3
 copy=*[+]c 3
 copy=*[+v] 3
 copy=cvv 2
+b 4
 
 store 3
 :
