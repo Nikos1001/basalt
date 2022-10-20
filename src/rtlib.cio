@@ -2,7 +2,7 @@
 alloc 1
 allocv 1
 free* 1
-printn 1
+printnv 1
 printc* 1
 copy= 2
 * 2
@@ -103,7 +103,7 @@ sprintn 2
     decrptr 2
     copy=*[+]c 4 2 0
     copy=*[+v] 5 3 4
-    printn 5
+    printnv 5
 :
 
 s+ 2

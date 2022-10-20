@@ -55,7 +55,7 @@ rtlib_path = '/'.join(path_pieces)
 
 shutil.copy(rtlib_path, 'build/a.cio')
 
-cionom_path = '/'.join(shutil.which('cionom-cli.out').split('/')[:-1])
+cionom_path = '/'.join(os.path.abspath(shutil.which('cionom-cli.out')).split('/')[:-1])
 final_path = os.path.abspath('out.cbe')
 build_dir_path = os.path.abspath('build')
 paths = [os.path.abspath('build/' + path[:-4]) for path in os.listdir('build/') if path.endswith('.cio')]
