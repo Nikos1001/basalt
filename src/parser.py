@@ -37,6 +37,17 @@ class Var(Ast):
     def dump(self, offset=0):
         print('\t' * offset + self.sym)
 
+class VarPtr(Ast):
+
+    name = ''
+    
+    def __init__(self, list, name):
+        super().__init__(list)
+        self.name = name
+    
+    def dump(self, offset=0):
+        print('\t' * offset + '&' + self.name)
+
 class VarDecl(Ast):
 
     name = ''
@@ -150,6 +161,15 @@ def parse(list, errs):
     if list.match('##ANYSYM##'):
         return Var(list, list.sym)
     
+    if len(list) > 0 and list[0].match('var-ptr'):
+        if len(list) < 2 or not list[1].match('##ANYSYM##'):
+            errs.append(Error().msg('Expected variable name.').src_ref(list.begin_token, list.end_token))
+            return None
+        if len(list) > 2:
+            errs.append(Error().msg('Unexpected values.').src_ref(list[2].begin_token, list[-1].end_token))
+            return None
+        return VarPtr(list, list[1].sym)
+
     if len(list) > 0 and list[0].match('let'):
         if len(list) < 2:
             errs.append(Error().msg('Expected variable name.').src_ref(list.begin_token, list.end_token))

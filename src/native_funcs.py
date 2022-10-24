@@ -5,7 +5,7 @@ def print_match(args):
     if len(args) > 1:
         return False
 
-    if type(args[0]) == compiler.SimpleType and args[0].type == 'int':
+    if type(args[0]) == compiler.SimpleType and args[0].type == 'int' or type(args[0]) == compiler.PointerType:
         return True
 
     return False

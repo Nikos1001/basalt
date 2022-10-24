@@ -5,9 +5,10 @@ free* 1
 printnv 1
 printc* 1
 copy= 2
-* 2
 + 2
 - 2
+* 2
+/ 2
 copy*[+v]=c 3
 copy*[+v]=v 3
 copy*[+]=c 3
@@ -136,6 +137,21 @@ s- 2
     incrptr 2
 :
 
+s* 2
+:
+    copy=cvv 2 0
+    copy=cvv 3 1
+    decrptr 2
+    copy=*[+]c 4 2 0
+    copy=*[+v] 5 3 4
+    decrptr 2
+    copy=*[+]c 6 2 0
+    copy=*[+v] 7 3 6
+    * 7 5 
+    store 2 3 10
+    incrptr 2
+:
+
 speek 2
 :
     copy=cvv 2 0
@@ -169,6 +185,18 @@ smov 4
     incrptr 6
 :
 
+stopptr 2
+:
+    copy=cvv 2 0
+    copy=cvv 3 1
+    copy=*[+]c 4 2 0
+    copy= 5 8
+    * 4 5
+    + 3 6
+    store 2 3 7
+    incrptr 2
+:
+
 __cionom_entrypoint 0
 :
     copy= 0 64
@@ -185,5 +213,5 @@ __cionom_entrypoint 0
     alloc 8
     copy*[+]=c 9 0 0
 
-    b 6 5 9 8 
+    b 6 5 9 8
 :

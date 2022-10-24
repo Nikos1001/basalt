@@ -30,6 +30,9 @@ class Block:
                     'speek 2\n' + \
                     'smov 4\n' + \
                     'sprintn 2\n' + \
+                    'stopptr 2\n' + \
+                    's- 2\n' + \
+                    's* 2\n' + \
                     '\n' + \
                     self.name + ' 4\n' + \
                     ':\n' + \
@@ -89,6 +92,15 @@ class Block:
     def printn(self):
         self.src += '\tsprintn 4 5\n'
     
+    def var_top_ptr(self):
+        self.src += '\tstopptr 6 7'
+    
+    def sub(self, var=False):
+        self.src += '\ts- 6 7' if var else '\ts- 4 5'
+
+    def mul(self, var=False):
+        self.src += '\ts* 6 7' if var else '\ts* 4 5'
+    
     def close(self):
         for ext_block in self.ext_blocks:
             self.src = ext_block.name + ' 4\n'
@@ -132,6 +144,23 @@ class SimpleType(Type):
         
     def __eq__(self, o):
         return type(o) == SimpleType and o.type == self.type
+
+class PointerType(Type):
+
+    type = None
+
+    def __init__(self, t):
+        super().__init__()
+        self.type = t
+
+    def __str__(self):
+        return super().__str__() + '(* ' + str(self.type) + ')'
+    
+    def size(self):
+        return 1
+    
+    def __eq__(self, o):
+        return type(o) == PointerType and o.type == self.type
 
 class Function:
 
@@ -203,13 +232,13 @@ class FnSpecialization:
         self.find_return_asts(ast.body)
     
     def find_return_asts(self, ast):
-        if type(ast) == parser.Int or type(ast) == parser.Var or type(ast) == parser.Call:
-            self.return_asts.append(ast)
-        elif type(ast) == parser.Seq:
+        if type(ast) == parser.Seq:
             self.find_return_asts(ast.exprs[-1])
         elif type(ast) == parser.VarDecl:
             if ast.val != None:
                 self.find_return_asts(ast.val)
+        else:
+            self.return_asts.append(ast)
 
     def match(self, arg_types):
         if len(arg_types) != len(self.param_types):
@@ -353,6 +382,18 @@ class Compiler:
                 return None
             self.var_decls[ast.id] = var
             return var.t 
+        elif type(ast) == parser.VarPtr:
+            name = ast.name
+            var = None
+            for i in range(len(self.vars)):
+                if name in self.vars[-i]:
+                    var = self.vars[-i][name]
+                    break
+            if var == None:
+                errs.append(Error().msg('Variable \'' + name + '\' does not exist.').ast_ref(ast))
+                return None
+            self.var_decls[ast.id] = var
+            return PointerType(var.t)
         elif type(ast) == parser.VarDecl:
             name = ast.name
             if name in self.vars[-1]:
@@ -468,6 +509,17 @@ class Compiler:
                 block.const(self.var_offset[ast.id] - var.offset - i, True)
                 block.peek(True)
                 block.mov_var_to_data()
+        elif type(ast) == parser.VarPtr:
+            if not ast.id in self.var_decls:
+                return
+            var = self.var_decls[ast.id]
+            t = var.t
+            block.var_top_ptr()
+            block.const(self.var_offset[ast.id] - var.offset - t.size(), True)
+            block.const(8, True)
+            block.mul(True)
+            block.sub(True)
+            block.mov_var_to_data()
         elif type(ast) == parser.VarDecl:
             if ast.val == None:
                 for i in range(self.typecheck(ast, errs).size()):

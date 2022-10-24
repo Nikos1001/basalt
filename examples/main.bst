@@ -1,11 +1,13 @@
 
 (fn main () (seq
-    (fn test () 444)
-    (fn test (x) 5)
-    (print (test))
-    (print (test 9))
+    (let x 5)
+    (let y 666)
+    (print (var-ptr x))
+    (print (var-ptr y))
     (seq
-        (fn test () 999)
-        (print (test))
-        (print (test 9)))))
+        (let z 9)
+        (print (var-ptr z)))
+    (let z 99)
+    (print (var-ptr z))))
+
 
