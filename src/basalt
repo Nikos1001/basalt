@@ -37,8 +37,10 @@ handle_errs(parse_errs)
 compile_errs = []
 
 global_compiler = compiler.Compiler()
-global_compiler.funcs[-1]['print'] = compiler.Function('name')
+global_compiler.funcs[-1]['print'] = compiler.Function('print')
 global_compiler.funcs[-1]['print'].native_specs.append(native_funcs.print_spec)
+global_compiler.funcs[-1]['idx'] = compiler.Function('idx')
+global_compiler.funcs[-1]['idx'].native_specs.append(native_funcs.idx_spec)
 global_compiler.find_decls(asts, compile_errs)
 main = global_compiler.get_incarn('main', [], compile_errs)
 
@@ -71,4 +73,4 @@ for path in paths:
     cmd += path + '.ibc '
 
 os.system(cmd)
-shutil.rmtree(build_dir_path)
+#shutil.rmtree(build_dir_path)

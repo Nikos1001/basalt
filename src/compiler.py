@@ -23,7 +23,7 @@ class Block:
             x //= 26
         self.src =  'copy=cvv 2\n' + \
                     'copy= 2\n' + \
-                    'copy=*[+]c 3\n' + \
+                    'copy=*[+]cw 3\n' + \
                     'copy*[+v]=v 3\n' + \
                     'sconst 13\n' + \
                     'spop 2\n' + \
@@ -31,8 +31,11 @@ class Block:
                     'smov 4\n' + \
                     'sprintn 2\n' + \
                     'stopptr 2\n' + \
+                    's+ 2\n' + \
                     's- 2\n' + \
                     's* 2\n' + \
+                    'sderef 2\n' + \
+                    'sstore 2\n' + \
                     '\n' + \
                     self.name + ' 4\n' + \
                     ':\n' + \
@@ -68,8 +71,8 @@ class Block:
 
     def call(self, block, ret_size):
         self.src = block.name + ' 4\n' + self.src
-        self.src += '\tcopy=*[+]c 0 4 0\n'
-        self.src += '\tcopy=*[+]c 1 6 0\n'
+        self.src += '\tcopy=*[+]cw 0 4 0\n'
+        self.src += '\tcopy=*[+]cw 1 6 0\n'
         self.src += '\t' + block.name + ' 4 5 6 7\n'
         self.src += '\tcopy= 2 0\n'
 
@@ -93,13 +96,22 @@ class Block:
         self.src += '\tsprintn 4 5\n'
     
     def var_top_ptr(self):
-        self.src += '\tstopptr 6 7'
+        self.src += '\tstopptr 6 7\n'
     
+    def add(self, var=False):
+        self.src += '\ts+ 6 7\n' if var else '\ts+ 4 5\n'
+
     def sub(self, var=False):
-        self.src += '\ts- 6 7' if var else '\ts- 4 5'
+        self.src += '\ts- 6 7\n' if var else '\ts- 4 5\n'
 
     def mul(self, var=False):
-        self.src += '\ts* 6 7' if var else '\ts* 4 5'
+        self.src += '\ts* 6 7\n' if var else '\ts* 4 5\n'
+    
+    def deref(self, var=False):
+        self.src += '\tsderef ' + ('6 7\n' if var else '4 5\n')
+    
+    def store(self, var=False):
+        self.src += '\tsstore ' + ('6 7\n' if var else '4 5\n') 
     
     def close(self):
         for ext_block in self.ext_blocks:
@@ -516,6 +528,8 @@ class Compiler:
             t = var.t
             block.var_top_ptr()
             block.const(self.var_offset[ast.id] - var.offset - t.size(), True)
+            block.const(1, True)
+            block.add(True)
             block.const(8, True)
             block.mul(True)
             block.sub(True)

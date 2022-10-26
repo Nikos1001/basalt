@@ -12,7 +12,7 @@ copy= 2
 copy*[+v]=c 3
 copy*[+v]=v 3
 copy*[+]=c 3
-copy=*[+]c 3
+copy=*[+]cw 3
 copy=*[+v] 3
 copy=cvv 2
 b 4
@@ -23,14 +23,14 @@ store 3
     copy=cvv 4 1
     copy=cvv 5 2
 
-    copy=*[+]c 6 3 0
+    copy=*[+]cw 6 3 0
     copy*[+v]=v 4 6 5
 :
 
 incrptr 1
 :
     copy=cvv 1 0
-    copy=*[+]c 2 1 0
+    copy=*[+]cw 2 1 0
     copy= 3 1
     + 2 3 
     copy= 5 0
@@ -40,7 +40,7 @@ incrptr 1
 decrptr 1
 :
     copy=cvv 1 0
-    copy=*[+]c 2 1 0
+    copy=*[+]cw 2 1 0
     copy= 3 1
     - 2 3 
     copy= 5 0
@@ -102,7 +102,7 @@ sprintn 2
     copy=cvv 2 0
     copy=cvv 3 1
     decrptr 2
-    copy=*[+]c 4 2 0
+    copy=*[+]cw 4 2 0
     copy=*[+v] 5 3 4
     printnv 5
 :
@@ -112,10 +112,10 @@ s+ 2
     copy=cvv 2 0
     copy=cvv 3 1
     decrptr 2
-    copy=*[+]c 4 2 0
+    copy=*[+]cw 4 2 0
     copy=*[+v] 5 3 4
     decrptr 2
-    copy=*[+]c 6 2 0
+    copy=*[+]cw 6 2 0
     copy=*[+v] 7 3 6
     + 5 7
     store 2 3 10
@@ -127,10 +127,10 @@ s- 2
     copy=cvv 2 0
     copy=cvv 3 1
     decrptr 2
-    copy=*[+]c 4 2 0
+    copy=*[+]cw 4 2 0
     copy=*[+v] 5 3 4
     decrptr 2
-    copy=*[+]c 6 2 0
+    copy=*[+]cw 6 2 0
     copy=*[+v] 7 3 6
     - 7 5 
     store 2 3 10
@@ -142,10 +142,10 @@ s* 2
     copy=cvv 2 0
     copy=cvv 3 1
     decrptr 2
-    copy=*[+]c 4 2 0
+    copy=*[+]cw 4 2 0
     copy=*[+v] 5 3 4
     decrptr 2
-    copy=*[+]c 6 2 0
+    copy=*[+]cw 6 2 0
     copy=*[+v] 7 3 6
     * 7 5 
     store 2 3 10
@@ -157,7 +157,7 @@ speek 2
     copy=cvv 2 0
     copy=cvv 3 1
     decrptr 2
-    copy=*[+]c 4 2 0
+    copy=*[+]cw 4 2 0
     copy=*[+v] 5 3 4
     - 4 5
     copy=*[+v] 8 3 7
@@ -179,7 +179,7 @@ smov 4
     copy=cvv 6 2
     copy=cvv 7 3
     decrptr 4
-    copy=*[+]c 9 4 0
+    copy=*[+]cw 9 4 0
     copy=*[+v] 10 5 9
     store 6 7 10
     incrptr 6
@@ -189,12 +189,39 @@ stopptr 2
 :
     copy=cvv 2 0
     copy=cvv 3 1
-    copy=*[+]c 4 2 0
+    copy=*[+]cw 4 2 0
     copy= 5 8
     * 4 5
     + 3 6
     store 2 3 7
     incrptr 2
+:
+
+sderef 2
+:
+    copy=cvv 2 0
+    copy=cvv 3 1
+    decrptr 2
+    copy=*[+]cw 4 2 0
+    copy=*[+v] 5 3 4
+    copy=*[+]cw 6 5 0
+    store 2 3 6
+    incrptr 2
+:
+
+sstore 2
+:
+    copy=cvv 2 0
+    copy=cvv 3 1
+    decrptr 2
+    copy=*[+]cw 4 2 0
+    copy=*[+v] 5 3 4
+    decrptr 2
+    copy=*[+]cw 7 2 0
+    copy=*[+v] 8 3 7
+    
+    copy= 9 0
+    copy*[+v]=v 8 9 5
 :
 
 __cionom_entrypoint 0

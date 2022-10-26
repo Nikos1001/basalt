@@ -177,6 +177,10 @@ def parse(lexer):
             errs.append(Error().msg('Expected ).').src_ref(lexer.curr_token, lexer.curr_token).msg('Unmatched opening bracket here:').src_ref(begin_token, begin_token))
 
         return (errs, List(elems, begin_token, end_token))
+    
+    token = lexer.curr_token
+    lexer.scan()
+    return ([Error().msg('Unexpected token.').src_ref(token, token)], None)
 
     
 def read_file(path):
