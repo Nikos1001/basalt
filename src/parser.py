@@ -119,6 +119,19 @@ class Call(Ast):
         for arg in self.args:
             arg.dump(offset + 1)
 
+class Tuple(Ast):
+
+    exprs = None
+
+    def __init__(self, list, exprs):
+        super().__init__(list)
+        self.exprs = exprs
+
+    def dump(self, offset=0):
+        print('\t' * offset + 'tuple')
+        for expr in self.exprs:
+            expr.dump(offset + 1)
+
 
 # Type ASTs
 
@@ -227,6 +240,10 @@ def parse(list, errs):
         func = FnDecl(list, list[1].sym, args, body_ast, list[1].begin_token)
 
         return func 
+
+    if len(list) > 0 and list[0].match('tuple'):
+        exprs = [parse(expr, errs) for expr in list[1:]]
+        return Tuple(list, exprs)
     
     if len(list) > 0 and list[0].match('##ANYSYM##'):
         args = [parse(expr, errs) for expr in list[1:]]

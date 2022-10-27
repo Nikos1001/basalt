@@ -174,6 +174,30 @@ class PointerType(Type):
     def __eq__(self, o):
         return type(o) == PointerType and o.type == self.type
 
+class TupleType(Type):
+
+    types = None
+
+    def __init__(self, types):
+        super().__init__()
+        self.types = types
+    
+    def __str__(self):
+        return super().__str__() + '(' + ' '.join([str(t) for t in self.types]) + ')'
+    
+    def size(self):
+        return sum([t.size() for t in self.types])
+    
+    def __eq__(self, o):
+        if type(o) != TupleType:
+            return False
+        if len(self.types) != len(o.types):
+            return False
+        for i in range(len(self.types)):
+            if self.types[i] != o.types[i]:
+                return False
+        return True
+
 class Function:
 
     specs = None
@@ -422,7 +446,8 @@ class Compiler:
             if ast.val != None and ast.type != None:
                 self.vars[-1][name].t = self.eval_type(ast.type, errs, ast.val) 
             self.vars[-1][name].offset = self.curr_var_offset
-            self.curr_var_offset += self.vars[-1][name].t.size()
+            if self.vars[-1][name].t != None:
+                self.curr_var_offset += self.vars[-1][name].t.size()
             return self.vars[-1][name].t
         elif type(ast) == parser.Call:
             arg_types = []
@@ -444,7 +469,8 @@ class Compiler:
                 if callee.ret_type == None:
                     return 'unknown'
                 return callee.ret_type
-        
+        elif type(ast) == parser.Tuple:
+            return TupleType([self.typecheck(expr, errs) for expr in ast.exprs])
         elif type(ast) == parser.SimpleType:
             return SimpleType(ast.type)
     
@@ -511,7 +537,8 @@ class Compiler:
                 if type(callee) == FnNativeSpec:
                     callee.compile(block, [self.typecheck(arg, errs) for arg in ast.args])
                 else:
-                    block.call(callee.block, callee.ret_type.size())
+                    if isinstance(callee.ret_type, Type):
+                        block.call(callee.block, callee.ret_type.size())
         elif type(ast) == parser.Var:
             if not ast.id in self.var_decls:
                 return
@@ -541,11 +568,16 @@ class Compiler:
                     block.const(0, False)
             else:
                 self.compile(ast.val, block, errs)
-                size = self.typecheck(ast, errs).size()
-                for i in range(size):
-                    block.const(size - i)
-                    block.peek()
-                    block.mov_data_to_var()
+                t = self.typecheck(ast, errs)
+                if t != None:
+                    size = t.size()
+                    for i in range(size):
+                        block.const(size - i)
+                        block.peek()
+                        block.mov_data_to_var()
+        elif type(ast) == parser.Tuple:
+            for expr in ast.exprs:
+                self.compile(expr, block, errs)
 
     def get_incarn(self, fn_name, arg_types, errors):
 
