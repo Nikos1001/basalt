@@ -157,11 +157,42 @@ class SimpleType(Ast):
     def __eq__(self, o):
         return type(o) == SimpleType and self.type == o.type
 
+class TupleType(Ast):
+
+    types = []
+
+    def __init__(self, list, types):
+        super().__init__(list)
+        self.types = types
+    
+    def dump(self, offset=0):
+        print('\t' * offset + 'tuple')
+        for type in self.types:
+            type.dump(offset + 1)
+    
+    def match(self, t):
+        import compiler
+        if type(t) != compiler.TupleType:
+            return -1 
+        if len(t.types) != len(self.types):
+            return -1
+        score = 2
+        for i in range(len(t.types)):
+            subscore = self.types[i].match(t.types[i])
+            if subscore == -1:
+                return -1
+            score += subscore
+        return score 
+
 
 def parse_type(list, errs):
 
-    if list.match('int'):
+    if list.match('int') or list.match('void'):
         return SimpleType(list, list.sym)
+    
+    if list.match('##ANYLIST##'):
+        if len(list) > 0 and list[0].match('tuple'):
+            return TupleType(list, [parse_type(type, errs) for type in list[1:]])
 
     errs.append(Error().msg('Expected type.').src_ref(list.begin_token, list.end_token))
     return None

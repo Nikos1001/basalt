@@ -68,3 +68,85 @@ def idx_compile(block, args):
         block.pop(True)
 
 idx_spec = compiler.FnNativeSpec(idx_match, idx_ret_type, idx_compile)
+
+def add_match(args):
+    if len(args) != 2:
+        return False
+    if args[0] != compiler.SimpleType('int') and type(args[0]) != compiler.PointerType:
+        return False 
+    if args[1] != compiler.SimpleType('int'):
+        return False 
+    return True 
+
+def add_ret_type(args):
+    return args[0] 
+
+def add_compile(block, args):
+    if type(args[0]) == compiler.PointerType:
+        block.const(args[0].type.size() * 8)
+        block.mul()
+    block.add()
+
+add_spec = compiler.FnNativeSpec(add_match, add_ret_type, add_compile)
+
+def sub_compile(block, args):
+    if type(args[0]) == compiler.PointerType:
+        block.const(args[0].type.size() * 8)
+        block.mul()
+    block.sub()
+
+sub_spec = compiler.FnNativeSpec(add_match, add_ret_type, sub_compile)
+
+def mul_match(args):
+    if len(args) != 2:
+        return False
+    return args[0] == compiler.SimpleType('int') and args[1] == compiler.SimpleType('int') 
+
+def mul_ret_type(args):
+    return compiler.SimpleType('int')
+
+def mul_compile(block, args):
+    block.mul()
+
+mul_spec = compiler.FnNativeSpec(mul_match, mul_ret_type, mul_compile)
+
+def car_match(args):
+    if len(args) != 1:
+        return False
+    return type(args[0]) == compiler.TupleType and len(args[0].types) > 0
+
+def car_ret_type(args):
+    return args[0].types[0]
+
+def car_compile(block, args):
+    tuple_type = args[0]
+    types = tuple_type.types
+    for i in range(types[0].size()):
+        block.const(tuple_type.size() - i)
+        block.peek()
+        block.mov_data_to_var()
+    for i in range(tuple_type.size()):
+        block.pop()
+    for i in range(types[0].size()):
+        block.mov_var_to_data()
+
+car_spec = compiler.FnNativeSpec(car_match, car_ret_type, car_compile)
+
+def cdr_ret_type(args):
+    tuple_type = args[0]
+    return compiler.TupleType(tuple_type.types[1:])
+
+def cdr_compile(block, args):
+    
+    tuple_type = args[0]
+    types = tuple_type.types
+    for i in range(tuple_type.size() - types[0].size()):
+        block.const(tuple_type.size() - types[0].size()- i)
+        block.peek()
+        block.mov_data_to_var()
+    for i in range(tuple_type.size()):
+        block.pop()
+    for i in range(tuple_type.size() - types[0].size()):
+        block.mov_var_to_data()
+
+cdr_spec = compiler.FnNativeSpec(car_match, cdr_ret_type, cdr_compile)

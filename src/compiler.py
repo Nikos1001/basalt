@@ -69,10 +69,12 @@ class Block:
     def mov_var_to_data(self):
         self.src += '\tsmov 6 7 4 5\n'
 
-    def call(self, block, ret_size):
-        self.src = block.name + ' 4\n' + self.src
+    def precall(self):
         self.src += '\tcopy=*[+]cw 0 4 0\n'
         self.src += '\tcopy=*[+]cw 1 6 0\n'
+
+    def call(self, block, ret_size):
+        self.src = block.name + ' 4\n' + self.src
         self.src += '\t' + block.name + ' 4 5 6 7\n'
         self.src += '\tcopy= 2 0\n'
 
@@ -482,10 +484,11 @@ class Compiler:
             self.vars[-1][arg_name] = Variable(None)
             self.vars[-1][arg_name].t = arg_type
             self.vars[-1][arg_name].offset = self.curr_var_offset
-            self.curr_var_offset += arg_type.size()
+            if arg_type != None:
+                self.curr_var_offset += arg_type.size()
     
     def compile_fn_init(self):
-        total_arg_size = sum([arg.size() for arg in self.incar.arg_types])
+        total_arg_size = sum([arg.size() if arg else 0 for arg in self.incar.arg_types])
         for i in range(self.curr_var_offset):
             self.incar.block.const(self.curr_var_offset - i)
             self.incar.block.peek()
@@ -527,6 +530,7 @@ class Compiler:
             for i in range(self.var_offset[ast.exprs[-1].id] - self.var_offset[ast.id]):
                 block.pop(True)
         elif type(ast) == parser.Call:
+            block.precall()
             for arg in ast.args:
                 self.compile(arg, block, errs)
             if not ast.id in self.callees:
@@ -544,10 +548,11 @@ class Compiler:
                 return
             var = self.var_decls[ast.id]
             t = var.t
-            for i in range(t.size()):
-                block.const(self.var_offset[ast.id] - var.offset - i, True)
-                block.peek(True)
-                block.mov_var_to_data()
+            if t != None:
+                for i in range(t.size()):
+                    block.const(self.var_offset[ast.id] - var.offset - i, True)
+                    block.peek(True)
+                    block.mov_var_to_data()
         elif type(ast) == parser.VarPtr:
             if not ast.id in self.var_decls:
                 return
